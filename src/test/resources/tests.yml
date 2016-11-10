@@ -1,0 +1,17 @@
+- 
+  name: implicit_deny_no_rules_for_table
+  setup: 
+    - "use temp"
+    - "use test_acl2"
+  test: "insert overwrite table test_acl.write select * from test_acl_table.allReadPartitioned where cat = 'ase'"
+  test_fail: SQLState
+- 
+  name: implicit_deny_no_rules_for_db
+  setup: "use test_acl2"
+  test: "insert overwrite table test_acl2.write select * from test_acl_table.allReadPartitioned where cat = 'ase'"
+  test_fail: SQLState
+- 
+  name: explicit_deny_unauthorized_user
+  setup: "use test_acl2"
+  test: "insert overwrite table test_acl_db.write select user_id from allReadPartitioned where cat = 'ase'"
+  test_fail: SQLState
