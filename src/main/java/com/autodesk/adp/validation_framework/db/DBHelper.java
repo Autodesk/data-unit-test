@@ -21,33 +21,34 @@ import org.slf4j.LoggerFactory;
 
 import com.autodesk.adp.validation_framework.utils.RETURNTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
+import com.autodesk.adp.validation_framework.utils.TEST_CONSTANTS;
 
 public class DBHelper {
 
 	private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
 	private static final Logger LOG = LoggerFactory.getLogger(DBHelper.class);
 
-	private static DBHelper dbHelper;
-	private static String DB_USER = "user.name";
-	private static String DB_PASSWORD = "password";
-	private static String DB_URL = "db.url";
+	private static final DBHelper dbHelper = new DBHelper();
+	private static final String DEF_IDLE_TIMEOUT = "1";
+	private static final String DEF_NUM_ACTIVE_CONN = "5";
 	private BasicDataSource ds;
 
 	private DBHelper() {
+		if (DBHelper.dbHelper != null)
+			throw new InstantiationError(
+					"Creating of this object is not allowed.");
 		ds = new BasicDataSource();
 		ds.setDriverClassName(DRIVER_NAME);
-		ds.setUsername(System.getenv(DB_USER));
-		ds.setPassword(System.getenv(DB_PASSWORD));
-		ds.setUrl(System.getenv(DB_URL));
+		ds.setUsername(System.getProperty(TEST_CONSTANTS.USER_NAME.name()));
+		ds.setPassword(System.getProperty(TEST_CONSTANTS.USER_PASSWORD.name()));
+		ds.setUrl(System.getProperty(TEST_CONSTANTS.DB_URL.name()));
+		ds.setRemoveAbandonedTimeout(Integer.parseInt(System.getProperty(
+				TEST_CONSTANTS.CONN_IDLE_TIMEOUT.name(), DEF_IDLE_TIMEOUT)));
+		ds.setMaxActive(Integer.parseInt(System.getProperty(
+				TEST_CONSTANTS.ACTIVE_CONN_COUNT.name(), DEF_NUM_ACTIVE_CONN)));
 	}
 
 	public static DBHelper getInstance() {
-		if (dbHelper == null) {
-			synchronized (DBHelper.class) {
-				if (dbHelper == null)
-					dbHelper = new DBHelper();
-			}
-		}
 		return dbHelper;
 	}
 
@@ -55,23 +56,16 @@ public class DBHelper {
 		return this.ds.getConnection();
 	}
 
-	public void close(Connection con, Statement stmt, ResultSet rs)
-			throws SQLException {
-		if (rs != null && !rs.isClosed())
-			rs.close();
-		if (stmt != null && !stmt.isClosed())
-			stmt.close();
-		if (con != null && !con.isClosed())
-			con.close();
+	public void closeAll() throws SQLException {
+		this.ds.close();
 	}
 
-	public Result executeAndGetResults(String query, RETURNTYPE returnType)
-			throws SQLException, IOException {
-		Connection con = null;
+	public Result executeAndGetResults(String query, RETURNTYPE returnType,
+			Connection con) throws SQLException, IOException {
+		LOG.info("Will execute query: " + query);
 		Statement stmt = null;
 		ResultSet rs = null;
 		try {
-			con = getConnection();
 			stmt = con.createStatement();
 			switch (returnType) {
 			case EXCEPTION:
@@ -80,8 +74,7 @@ public class DBHelper {
 				try {
 					stmt.execute(query);
 				} catch (Exception exception) {
-					return new Result(returnType, null, null,
-							exception);
+					return new Result(returnType, null, null, exception);
 				}
 				break;
 			case NONE:
@@ -92,7 +85,8 @@ public class DBHelper {
 			case LIST:
 			case MAP:
 			case CSV:
-				LOG.info("return type is {}. Will fetch, wrap and return data.",
+				LOG.info(
+						"return type is {}. Will fetch, wrap and return data.",
 						returnType.name());
 				stmt.execute(query);
 				rs = stmt.getResultSet();
@@ -102,12 +96,16 @@ public class DBHelper {
 				break;
 			}
 		} finally {
-			close(con, stmt, rs);
+			if (rs != null)
+				rs.close();
+			if (stmt != null)
+				stmt.close();
 		}
 		return null;
 	}
 
-	private Result getData(ResultSet rs, ResultSetMetaData metadata, RETURNTYPE returnType) throws SQLException, IOException {
+	private Result getData(ResultSet rs, ResultSetMetaData metadata,
+			RETURNTYPE returnType) throws SQLException, IOException {
 		switch (returnType) {
 		case LIST:
 			JSONArray list = getListOfLists(rs, metadata);
@@ -117,28 +115,31 @@ public class DBHelper {
 			return new Result(returnType, list, null, null);
 		case CSV:
 			String fileName = UUID.randomUUID().toString() + ".csv";
-			File file = new File(fileName); 
+			File file = new File(fileName);
 			CSVFormat csvFormat = CSVFormat.DEFAULT.withHeader(metadata);
 			try (FileWriter fileWriter = new FileWriter(file);
-					CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(""), csvFormat);){
+					CSVPrinter csvPrinter = new CSVPrinter(new FileWriter(
+							fileName), csvFormat);) {
 				csvPrinter.printRecords(rs);
 				return new Result(returnType, null, fileName, null);
-			} 
+			}
 		default:
 			return null;
 		}
 	}
 
-	private JSONArray getListOfObjects(ResultSet rs, ResultSetMetaData metadata) throws SQLException {
+	private JSONArray getListOfObjects(ResultSet rs, ResultSetMetaData metadata)
+			throws SQLException {
 		JSONArray output = new JSONArray();
 		int numCols = metadata.getColumnCount();
-		while(rs.next()) {
+		while (rs.next()) {
 			JSONObject row = new JSONObject();
-			for(int i=1; i<=numCols; i++) {
+			for (int i = 1; i <= numCols; i++) {
 				Type t = Type.getType(metadata.getColumnTypeName(i));
 				switch (t) {
 				case ARRAY_TYPE:
-					row.put(metadata.getColumnName(i), new JSONArray(rs.getString(i)));
+					row.put(metadata.getColumnName(i),
+							new JSONArray(rs.getString(i)));
 					break;
 				case BIGINT_TYPE:
 					row.put(metadata.getColumnName(i), rs.getLong(i));
@@ -172,7 +173,8 @@ public class DBHelper {
 					row.put(metadata.getColumnName(i), rs.getString(i));
 					break;
 				case MAP_TYPE:
-					row.put(metadata.getColumnName(i), new JSONObject(rs.getString(i)));
+					row.put(metadata.getColumnName(i),
+							new JSONObject(rs.getString(i)));
 					break;
 				case SMALLINT_TYPE:
 					row.put(metadata.getColumnName(i), rs.getShort(i));
@@ -185,19 +187,20 @@ public class DBHelper {
 					break;
 				default:
 					break;
-				} 
+				}
 			}
 			output.put(row);
 		}
 		return output;
 	}
 
-	private JSONArray getListOfLists(ResultSet rs, ResultSetMetaData metadata) throws SQLException {
+	private JSONArray getListOfLists(ResultSet rs, ResultSetMetaData metadata)
+			throws SQLException {
 		JSONArray output = new JSONArray();
 		int numCols = metadata.getColumnCount();
-		while(rs.next()) {
+		while (rs.next()) {
 			JSONArray row = new JSONArray();
-			for(int i=1; i<=numCols; i++) {
+			for (int i = 1; i <= numCols; i++) {
 				Type t = Type.getType(metadata.getColumnTypeName(i));
 				switch (t) {
 				case ARRAY_TYPE:
@@ -248,7 +251,7 @@ public class DBHelper {
 					break;
 				default:
 					break;
-				} 
+				}
 			}
 			output.put(row);
 		}
@@ -256,5 +259,3 @@ public class DBHelper {
 	}
 
 }
-
-

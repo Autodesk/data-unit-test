@@ -1,5 +1,6 @@
 package com.autodesk.adp.validation_framework.assertions;
 
+import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
@@ -12,13 +13,17 @@ import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.autodesk.adp.validation_framework.utils.Result;
+
 public class CsvAssertions implements Assertions {
 
 	private static final Logger LOG = LoggerFactory.getLogger(CsvAssertions.class);
 
-	public boolean assertEquals(String expectedFile, String actualFile)
+	public boolean assertEquals(Object expectedFile, Result result)
 			throws IOException {
-		try (Reader expectedFileReader = new FileReader(expectedFile);
+		String actualFileName = result.getFileName();
+		File actualFile = new File(actualFileName);
+		try (Reader expectedFileReader = new FileReader((String) expectedFile);
 				Reader actualFileReader = new FileReader(actualFile);) {
 			CSVParser expectedFileParser = CSVFormat.DEFAULT
 					.withFirstRecordAsHeader().parse(expectedFileReader);
@@ -51,13 +56,17 @@ public class CsvAssertions implements Assertions {
 			}
 		} catch (IOException e) {
 			throw e;
+		} finally {
+			actualFile.delete();
 		}
 
 	}
 
-	public boolean assertIncludes(String expectedFile, String actualFile)
+	public boolean assertIncludes(Object expectedFile, Result result)
 			throws IOException {
-		try (Reader expectedFileReader = new FileReader(expectedFile);
+		String actualFileName = result.getFileName();
+		File actualFile = new File(actualFileName);
+		try (Reader expectedFileReader = new FileReader((String) expectedFile);
 				Reader actualFileReader = new FileReader(actualFile);) {
 			CSVParser expectedFileParser = CSVFormat.DEFAULT
 					.withFirstRecordAsHeader().parse(expectedFileReader);
@@ -83,12 +92,16 @@ public class CsvAssertions implements Assertions {
 			}
 		} catch (IOException e) {
 			throw e;
+		} finally {
+			actualFile.delete();
 		}
 	}
 
-	public boolean assertExcludes(String expectedFile, String actualFile)
+	public boolean assertExcludes(Object expectedFile, Result result)
 			throws IOException {
-		try (Reader expectedFileReader = new FileReader(expectedFile);
+		String actualFileName = result.getFileName();
+		File actualFile = new File(actualFileName);
+		try (Reader expectedFileReader = new FileReader((String) expectedFile);
 				Reader actualFileReader = new FileReader(actualFile);) {
 			CSVParser expectedFileParser = CSVFormat.DEFAULT
 					.withFirstRecordAsHeader().parse(expectedFileReader);
@@ -115,12 +128,16 @@ public class CsvAssertions implements Assertions {
 			return true;
 		} catch (IOException e) {
 			throw e;
+		} finally {
+			actualFile.delete();
 		}
 	}
 
-	public boolean assertOrderedEquals(String expectedFile, String actualFile)
+	public boolean assertOrderedEquals(Object expectedFile, Result result)
 			throws IOException {
-		try (Reader expectedFileReader = new FileReader(expectedFile);
+		String actualFileName = result.getFileName();
+		File actualFile = new File(actualFileName);
+		try (Reader expectedFileReader = new FileReader((String) expectedFile);
 				Reader actualFileReader = new FileReader(actualFile);) {
 			CSVParser expectedFileParser = CSVFormat.DEFAULT
 					.withFirstRecordAsHeader().parse(expectedFileReader);
@@ -152,8 +169,16 @@ public class CsvAssertions implements Assertions {
 			return true;
 		} catch (IOException e) {
 			throw e;
+		} finally {
+			actualFile.delete();
 		}
 
+	}
+	
+	@Override
+	public boolean assertFails(Object expected, Result actual)
+			throws UnsupportedOperationException {
+		throw new UnsupportedOperationException();
 	}
 
 }

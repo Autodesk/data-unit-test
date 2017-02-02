@@ -1,15 +1,18 @@
 package com.autodesk.adp.validation_framework.assertions;
 
-import java.io.IOException;
+import com.autodesk.adp.validation_framework.utils.Result;
+
 
 public interface Assertions {
 	
-	public boolean assertEquals(String expected, String actual) throws IOException;
+	public boolean assertEquals(Object expected, Result actual) throws Exception;
 	
-	public boolean assertIncludes(String expected, String actual) throws IOException;
+	public boolean assertIncludes(Object expected, Result actual) throws Exception;
 	
-	public boolean assertExcludes(String expected, String actual) throws IOException;
+	public boolean assertExcludes(Object expected, Result actual) throws Exception;
 	
-	public boolean assertOrderedEquals(String expected, String actual) throws IOException;
+	public boolean assertOrderedEquals(Object expected, Result actual) throws Exception;
+	
+	public boolean assertFails(Object expected, Result actual) throws Exception;
 
 }
