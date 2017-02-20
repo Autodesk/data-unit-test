@@ -2,12 +2,12 @@ name := "validation-framework"
 
 organization := "com.autodesk"
 
-version := "1.0"
+version := "1.0-SNAPSHOT"
 
 scalaVersion := "2.11.1"
 
 resolvers := Seq(
-  "Nexus Public" at "http://a360nexus.autodesk.com/nexus/content/groups/public"
+  "Artifactory" at "https://art-bobcat.autodesk.com/artifactory"
 )
 
 // Do not append Scala versions to the generated artifacts
@@ -52,11 +52,10 @@ mainClass in assembly := Some("com.autodesk.adp.validation_framework.TestRunner"
 unmanagedResourceDirectories in Compile := Seq(baseDirectory.value / "conf")
 includeFilter in unmanagedResources := "log4j.properties"
 
+credentials += Credentials(new File(System.getenv("FILE")))
+
 publishTo <<= version { v: String =>
-  val nexus = "http://a360nexus.autodesk.com/nexus/"
-  if (v.trim.endsWith("SNAPSHOT")) Some("Snapshots" at nexus + "content/repositories/snapshots")
-  else Some("Release" at nexus + "content/repositories/releases")
+  val bobcat = "https://art-bobcat.autodesk.com/artifactory/"
+  if (v.trim.endsWith("SNAPSHOT")) Some("Artifactory Realm" at bobcat + "team-adp-sbt")
+  else Some("Artifactory Realm" at bobcat + "autodesk-libs-release-ivy")
 }
-
-credentials += Credentials("Sonatype Nexus Repository Manager", "a360nexus.autodesk.com", "admin", sys.props.getOrElse("nexus_admin_pw", "password"))
-
