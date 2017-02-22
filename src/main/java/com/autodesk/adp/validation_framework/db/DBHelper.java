@@ -8,12 +8,12 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.UUID;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.apache.hive.service.cli.Type;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -23,22 +23,53 @@ import com.autodesk.adp.validation_framework.utils.RETURNTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
 import com.autodesk.adp.validation_framework.utils.TEST_CONSTANTS;
 
+/**
+ * The Class DBHelper uses JDBC APIs to execute database related tasks. Is a
+ * Singleton and maintains a dbcp connection pool. All database related
+ * operations should be carried out using the APIs.
+ */
 public class DBHelper {
 
-	private static final String DRIVER_NAME = "org.apache.hive.jdbc.HiveDriver";
+	/** The Constant LOG. Used for logging */
 	private static final Logger LOG = LoggerFactory.getLogger(DBHelper.class);
 
+	/** The Constant dbHelper. The singleton instance that is used at all times. */
 	private static final DBHelper dbHelper = new DBHelper();
+
+	/**
+	 * The Constant DEF_IDLE_TIMEOUT. Used for determining the default idle time
+	 * out for the connections in the pool.
+	 */
 	private static final String DEF_IDLE_TIMEOUT = "1";
+
+	/**
+	 * The Constant DEF_NUM_ACTIVE_CONN. Used for determining the default number
+	 * of connections to be maintained in the connection pool.
+	 */
 	private static final String DEF_NUM_ACTIVE_CONN = "5";
+
+	/**
+	 * The constant DEV_JDBC_DRIVER. Points to hive jdbc driver. Used in case no
+	 * driver is provided.
+	 */
+	private static final String DEF_JDBC_DRIVER = "org.apache.hive.jdbc.HiveDriver";
+
+	/** The BasicDataSource object used for creating the connection pool. */
 	private BasicDataSource ds;
 
+	/**
+	 * Instantiates a new DB helper. The private constructor that will be called
+	 * exactly once per JVM. It creates the DBCP connection-pool.
+	 */
 	private DBHelper() {
 		if (DBHelper.dbHelper != null)
 			throw new InstantiationError(
 					"Creating of this object is not allowed.");
 		ds = new BasicDataSource();
-		ds.setDriverClassName(DRIVER_NAME);
+		if (System.getProperty(TEST_CONSTANTS.JDBC_DRIVER.name()) == null)
+			System.setProperty(TEST_CONSTANTS.JDBC_DRIVER.name(), DEF_JDBC_DRIVER);
+		ds.setDriverClassName(System.getProperty(TEST_CONSTANTS.JDBC_DRIVER
+				.name()));
 		ds.setUsername(System.getProperty(TEST_CONSTANTS.USER_NAME.name()));
 		ds.setPassword(System.getProperty(TEST_CONSTANTS.USER_PASSWORD.name()));
 		ds.setUrl(System.getProperty(TEST_CONSTANTS.DB_URL.name()));
@@ -48,18 +79,60 @@ public class DBHelper {
 				TEST_CONSTANTS.ACTIVE_CONN_COUNT.name(), DEF_NUM_ACTIVE_CONN)));
 	}
 
+	/**
+	 * Gets the single instance of DBHelper. Follows Singleton pattern so as to
+	 * prevent the DBCP connection pool from being initialized multiple times.
+	 *
+	 * @return single static final instance of DBHelper.
+	 */
 	public static DBHelper getInstance() {
 		return dbHelper;
 	}
 
+	/**
+	 * Gets the SQL connection from the connection pool.
+	 *
+	 * @return one connection from the pool.
+	 * @throws SQLException
+	 *             Signals that an SQL exception has occurred while fetching SQL
+	 *             connection from the connection pool.
+	 */
 	public Connection getConnection() throws SQLException {
 		return this.ds.getConnection();
 	}
 
+	/**
+	 * Close all the connections as well as the connection pool. Should be
+	 * called once the program finishes.
+	 *
+	 * @throws SQLException
+	 *             Signals that and SQL exception has occurred while closing the
+	 *             connection pool.
+	 */
 	public void closeAll() throws SQLException {
 		this.ds.close();
 	}
 
+	/**
+	 * Execute query and get results. The query is executed using the connection
+	 * and the query provided and the results are converted in appropriate form
+	 * using the {@link RETURNTYPE}
+	 *
+	 * @param query
+	 *            the query string that must be executed.
+	 * @param returnType
+	 *            the return type as specified in the test case.
+	 * @param con
+	 *            the SQL connection object that must be taken from the
+	 *            connection pool earlier using {@link DBHelper#getConnection()}
+	 * @return the result in the appropriate form using the results obtained by
+	 *         the query and converting them using the expected returnType
+	 * @throws SQLException
+	 *             Signals that an SQL exception has occurred while executing
+	 *             the query.
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred.
+	 */
 	public Result executeAndGetResults(String query, RETURNTYPE returnType,
 			Connection con) throws SQLException, IOException {
 		LOG.info("Will execute query: " + query);
@@ -104,6 +177,26 @@ public class DBHelper {
 		return null;
 	}
 
+	/**
+	 * Uses the returnType to generate {@link Result} object containing the
+	 * output in appropriate form. Uses the resultset and the metadata obtained
+	 * by executing the query and then depending upon the return type, creates
+	 * the output.
+	 *
+	 * @param rs
+	 *            the resultset obtained by executing the query.
+	 * @param metadata
+	 *            the metadata of the resultset.
+	 * @param returnType
+	 *            the return type as specified in the test case.
+	 * @return the result object containing the output in appropriate form.
+	 * @throws SQLException
+	 *             Signals that SQL exception has occurred while parsing the
+	 *             resultset and the corresponding metadata.
+	 * @throws IOException
+	 *             Signals that an I/O exception has occurred while creating the
+	 *             csv file.
+	 */
 	private Result getData(ResultSet rs, ResultSetMetaData metadata,
 			RETURNTYPE returnType) throws SQLException, IOException {
 		switch (returnType) {
@@ -128,6 +221,21 @@ public class DBHelper {
 		}
 	}
 
+	/**
+	 * Gets the list of objects from the resultset. Called when the return type
+	 * is {@link RETURNTYPE#MAP}. Parses the resultset as well as the metadata
+	 * and cretes a JSONArray of JSONObjects with keys as the column names and
+	 * values as the column values.
+	 *
+	 * @param rs
+	 *            the resultset obtained after executing the query
+	 * @param metadata
+	 *            the metadata associated with the resultset
+	 * @return the JSONArray of JSONObjects obtained by parsing the resultset.
+	 * @throws SQLException
+	 *             Signals that SQL exception has occurred while parsing the
+	 *             resultset and the corresponding metadata.
+	 */
 	private JSONArray getListOfObjects(ResultSet rs, ResultSetMetaData metadata)
 			throws SQLException {
 		JSONArray output = new JSONArray();
@@ -135,54 +243,53 @@ public class DBHelper {
 		while (rs.next()) {
 			JSONObject row = new JSONObject();
 			for (int i = 1; i <= numCols; i++) {
-				Type t = Type.getType(metadata.getColumnTypeName(i));
-				switch (t) {
-				case ARRAY_TYPE:
+				int type = metadata.getColumnType(i);
+				switch (type) {
+				case Types.ARRAY:
 					row.put(metadata.getColumnName(i),
 							new JSONArray(rs.getString(i)));
 					break;
-				case BIGINT_TYPE:
+				case Types.BIGINT:
 					row.put(metadata.getColumnName(i), rs.getLong(i));
 					break;
-				case BINARY_TYPE:
+				case Types.BINARY:
 					row.put(metadata.getColumnName(i), rs.getBytes(i));
 					break;
-				case BOOLEAN_TYPE:
+				case Types.BOOLEAN:
 					row.put(metadata.getColumnName(i), rs.getBoolean(i));
 					break;
-				case DATE_TYPE:
+				case Types.DATE:
 					row.put(metadata.getColumnName(i), rs.getDate(i));
 					break;
-				case DECIMAL_TYPE:
-					row.put(metadata.getColumnName(i), rs.getLong(i));
-					break;
-				case DOUBLE_TYPE:
+				case Types.DECIMAL:
 					row.put(metadata.getColumnName(i), rs.getDouble(i));
 					break;
-				case FLOAT_TYPE:
+				case Types.DOUBLE:
+					row.put(metadata.getColumnName(i), rs.getDouble(i));
+					break;
+				case Types.FLOAT:
 					row.put(metadata.getColumnName(i), rs.getFloat(i));
 					break;
-				case INT_TYPE:
+				case Types.INTEGER:
 					row.put(metadata.getColumnName(i), rs.getInt(i));
 					break;
-				case CHAR_TYPE:
-				case VARCHAR_TYPE:
-				case STRUCT_TYPE:
-				case UNION_TYPE:
-				case STRING_TYPE:
+				case Types.CHAR:
+				case Types.VARCHAR:
+				case Types.STRUCT:
+				case Types.OTHER:
 					row.put(metadata.getColumnName(i), rs.getString(i));
 					break;
-				case MAP_TYPE:
+				case Types.JAVA_OBJECT:
 					row.put(metadata.getColumnName(i),
 							new JSONObject(rs.getString(i)));
 					break;
-				case SMALLINT_TYPE:
+				case Types.SMALLINT:
 					row.put(metadata.getColumnName(i), rs.getShort(i));
 					break;
-				case TIMESTAMP_TYPE:
+				case Types.TIMESTAMP:
 					row.put(metadata.getColumnName(i), rs.getTimestamp(i));
 					break;
-				case TINYINT_TYPE:
+				case Types.TINYINT:
 					row.put(metadata.getColumnName(i), rs.getByte(i));
 					break;
 				default:
@@ -194,6 +301,20 @@ public class DBHelper {
 		return output;
 	}
 
+	/**
+	 * Gets the list of lists from the resultset. Called when the return type is
+	 * {@link RETURNTYPE#LIST}. Parses the resultset as well as the metadata and
+	 * cretes a JSONArray of JSONArrays containing the column values.
+	 *
+	 * @param rs
+	 *            the resultset obtained after executing the query
+	 * @param metadata
+	 *            the metadata associated with the resultset
+	 * @return the JSONArray of JSONArray obtained by parsing the resultset.
+	 * @throws SQLException
+	 *             Signals that SQL exception has occurred while parsing the
+	 *             resultset and the corresponding metadata.
+	 */
 	private JSONArray getListOfLists(ResultSet rs, ResultSetMetaData metadata)
 			throws SQLException {
 		JSONArray output = new JSONArray();
@@ -201,52 +322,51 @@ public class DBHelper {
 		while (rs.next()) {
 			JSONArray row = new JSONArray();
 			for (int i = 1; i <= numCols; i++) {
-				Type t = Type.getType(metadata.getColumnTypeName(i));
-				switch (t) {
-				case ARRAY_TYPE:
+				int type = metadata.getColumnType(i);
+				switch (type) {
+				case Types.ARRAY:
 					row.put(new JSONArray(rs.getString(i)));
 					break;
-				case BIGINT_TYPE:
+				case Types.BIGINT:
 					row.put(rs.getLong(i));
 					break;
-				case BINARY_TYPE:
+				case Types.BINARY:
 					row.put(rs.getBytes(i));
 					break;
-				case BOOLEAN_TYPE:
+				case Types.BOOLEAN:
 					row.put(rs.getBoolean(i));
 					break;
-				case DATE_TYPE:
+				case Types.DATE:
 					row.put(rs.getDate(i));
 					break;
-				case DECIMAL_TYPE:
-					row.put(rs.getLong(i));
-					break;
-				case DOUBLE_TYPE:
+				case Types.DECIMAL:
 					row.put(rs.getDouble(i));
 					break;
-				case FLOAT_TYPE:
+				case Types.DOUBLE:
+					row.put(rs.getDouble(i));
+					break;
+				case Types.FLOAT:
 					row.put(rs.getFloat(i));
 					break;
-				case INT_TYPE:
+				case Types.INTEGER:
 					row.put(rs.getInt(i));
 					break;
-				case CHAR_TYPE:
-				case VARCHAR_TYPE:
-				case STRUCT_TYPE:
-				case UNION_TYPE:
-				case STRING_TYPE:
+				case Types.CHAR:
+				case Types.VARCHAR:
+				case Types.STRUCT:
+				case Types.OTHER:
 					row.put(rs.getString(i));
 					break;
-				case MAP_TYPE:
+				case Types.JAVA_OBJECT:
 					row.put(new JSONObject(rs.getString(i)));
 					break;
-				case SMALLINT_TYPE:
+				case Types.SMALLINT:
 					row.put(rs.getShort(i));
 					break;
-				case TIMESTAMP_TYPE:
+				case Types.TIMESTAMP:
 					row.put(rs.getTimestamp(i));
 					break;
-				case TINYINT_TYPE:
+				case Types.TINYINT:
 					row.put(rs.getByte(i));
 					break;
 				default:

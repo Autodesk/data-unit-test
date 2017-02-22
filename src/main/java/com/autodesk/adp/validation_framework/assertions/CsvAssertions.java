@@ -13,12 +13,39 @@ import org.apache.commons.csv.CSVParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.autodesk.adp.validation_framework.utils.ASSERTTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
 
+/**
+ * The Class CsvAssertions. Checks for various supported assertions (specified in
+ * {@link ASSERTTYPE}) The expected object must always be a locally existing csv
+ * file. The execution of tests create the actual result csv file which is then
+ * matched against the expected file. Post assertion, the actual file is
+ * deleted.
+ */
 public class CsvAssertions implements Assertions {
 
-	private static final Logger LOG = LoggerFactory.getLogger(CsvAssertions.class);
+	/** The Constant LOG. Used for logging */
+	private static final Logger LOG = LoggerFactory
+			.getLogger(CsvAssertions.class);
 
+	/**
+	 * Assert equals checks for equality between expected and actual csv file.
+	 * Both csv files are parsed and the contents are compared. The order of the
+	 * rows in the result does not affect the comparison and if both the files
+	 * have same number of rows and the contents of all the rows match, it is
+	 * considered to be a match. The test case executed will create a temporary
+	 * csv file containing rows of actual results.
+	 * 
+	 * @param expectedFile
+	 *            The name of local csv file containing the expected rows of
+	 *            results.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 * @throws IOException
+	 *             In case, the file is not found or there is an error while
+	 *             parsing the contents of the file.
+	 */
 	public boolean assertEquals(Object expectedFile, Result result)
 			throws IOException {
 		String actualFileName = result.getFileName();
@@ -46,8 +73,6 @@ public class CsvAssertions implements Assertions {
 				return false;
 			}
 			if (!actualList.containsAll(expectedList)) {
-				System.out.println(actualList);
-				System.out.println(expectedList);
 				LOG.error("Contents of csv file do not match");
 				return false;
 			} else {
@@ -62,6 +87,23 @@ public class CsvAssertions implements Assertions {
 
 	}
 
+	/**
+	 * Assert include checks for inclusion of expected results in the actual csv
+	 * file. Both csv files are parsed and the contents are compared. The order
+	 * of the rows in the result does not affect the comparison and if all the
+	 * rows of expected file are present in the actual file, it is considered to
+	 * be a match. The test case executed will create a temporary csv file
+	 * containing rows of actual results.
+	 * 
+	 * @param expectedFile
+	 *            The name of local csv file containing the expected rows of
+	 *            results.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 * @throws IOException
+	 *             In case, the file is not found or there is an error while
+	 *             parsing the contents of the file.
+	 */
 	public boolean assertIncludes(Object expectedFile, Result result)
 			throws IOException {
 		String actualFileName = result.getFileName();
@@ -97,6 +139,23 @@ public class CsvAssertions implements Assertions {
 		}
 	}
 
+	/**
+	 * Assert excludes checks for exclusion of expected results from the actual
+	 * csv file. Both csv files are parsed and the contents are compared. The
+	 * order of the rows in the result does not affect the comparison and if all
+	 * the rows of expected file are absent from the actual file, it is
+	 * considered to be a match. The test case executed will create a temporary
+	 * csv file containing rows of actual results.
+	 * 
+	 * @param expectedFile
+	 *            The name of local csv file containing the expected rows of
+	 *            results.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 * @throws IOException
+	 *             In case, the file is not found or there is an error while
+	 *             parsing the contents of the file.
+	 */
 	public boolean assertExcludes(Object expectedFile, Result result)
 			throws IOException {
 		String actualFileName = result.getFileName();
@@ -133,6 +192,23 @@ public class CsvAssertions implements Assertions {
 		}
 	}
 
+	/**
+	 * Assert ordered equals checks for absolute equality between expected and
+	 * actual csv file. Both csv files are parsed and the contents are compared.
+	 * The order of the rows in the result affects the comparison and even a
+	 * slight difference in the expected and actual file will result in a
+	 * failure to match. The test case executed will create a temporary csv file
+	 * containing rows of actual results.
+	 * 
+	 * @param expectedFile
+	 *            The name of local csv file containing the expected rows of
+	 *            results.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 * @throws IOException
+	 *             In case, the file is not found or there is an error while
+	 *             parsing the contents of the file.
+	 */
 	public boolean assertOrderedEquals(Object expectedFile, Result result)
 			throws IOException {
 		String actualFileName = result.getFileName();
@@ -174,7 +250,15 @@ public class CsvAssertions implements Assertions {
 		}
 
 	}
-	
+
+	/**
+	 * Unused for csv assertions. Here only for implementation consistency.
+	 * Framework should not call this if test cases are properly formed in the
+	 * yaml file. In case it is called, it will throw Exception.
+	 * 
+	 * @throws UnsupportedOperationException
+	 *             Calling this means something went wrong.
+	 */
 	@Override
 	public boolean assertFails(Object expected, Result actual)
 			throws UnsupportedOperationException {

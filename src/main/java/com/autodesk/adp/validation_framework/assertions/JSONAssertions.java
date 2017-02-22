@@ -6,13 +6,34 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.autodesk.adp.validation_framework.utils.ASSERTTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
 
+/**
+ * The Class JSONAssertions. Checks for various supported assertions (specified
+ * in {@link ASSERTTYPE}) The expected object must be in form of a list of
+ * objects. This can be achieved by specifying the expected output in form of
+ * {@link JSONArray} The execution of tests generates the output in form of list
+ * of objects which is then matched against the expected list.
+ */
 public class JSONAssertions implements Assertions {
 
+	/** The Constant LOG. Used for logging */
 	private static final Logger LOG = LoggerFactory
 			.getLogger(JSONAssertions.class);
 
+	/**
+	 * Assert equals checks for equality between expected and actual outputs.
+	 * Both expected and output lists are first compared for size. If this check
+	 * passes, the contents are compared against each other. The order of the
+	 * rows in the expected and actual outputs do not matter, only the content
+	 * is compared and if the contents match, the assertion succeeds.
+	 * 
+	 * @param expectedList
+	 *            The expected output in form of JSONArray.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 */
 	public boolean assertEquals(Object expectedList, Result result) {
 		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
@@ -23,13 +44,29 @@ public class JSONAssertions implements Assertions {
 			return false;
 		}
 		if (!actualArray.containsAll(expectedArray)) {
-			LOG.error("Actual list does not match with expected list. Expected: " + expectedArray.toString() + ", actual: " + actualArray.toString());
+			LOG.error("Actual list does not match with expected list. Expected: "
+					+ expectedArray.toString()
+					+ ", actual: "
+					+ actualArray.toString());
 			return false;
 		}
-		LOG.info("Actual list matches with the expected list. Expected: " + expectedArray.toString() + ", actual: " + actualArray.toString());
+		LOG.info("Actual list matches with the expected list. Expected: "
+				+ expectedArray.toString() + ", actual: "
+				+ actualArray.toString());
 		return true;
 	}
 
+	/**
+	 * Assert includes checks for the inclusion of expected output in the actual
+	 * output. The order of the rows in the expected and actual outputs do not
+	 * matter, only the content is compared and if all the contents of expected
+	 * output are present in the actual output, the assertion succeeds.
+	 * 
+	 * @param expectedList
+	 *            The expected output in form of JSONArray.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 */
 	public boolean assertIncludes(Object expectedList, Result result) {
 		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
@@ -43,6 +80,17 @@ public class JSONAssertions implements Assertions {
 		return true;
 	}
 
+	/**
+	 * Assert excludes checks for the exclusion of expected output in the actual
+	 * output. The order of the rows in the expected and actual outputs do not
+	 * matter, only the content is compared and if all the contents of expected
+	 * output are absent from the actual output, the assertion succeeds.
+	 * 
+	 * @param expectedList
+	 *            The expected output in form of JSONArray.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 */
 	public boolean assertExcludes(Object expectedList, Result result) {
 		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
@@ -58,6 +106,19 @@ public class JSONAssertions implements Assertions {
 		return true;
 	}
 
+	/**
+	 * Assert ordered equals checks for equality between expected and actual
+	 * outputs. Both expected and output lists are first compared for size. If
+	 * this check passes, the contents are compared against each other. The
+	 * order of the rows in the expected and actual outputs are also considered
+	 * and each row of the expected output should match exactly with each row of
+	 * the actual output for the assertion to succeed.
+	 * 
+	 * @param expectedList
+	 *            The expected output in form of JSONArray.
+	 * @param result
+	 *            The result obtained after executing the test case.
+	 */
 	public boolean assertOrderedEquals(Object expectedList, Result result) {
 		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
@@ -77,6 +138,14 @@ public class JSONAssertions implements Assertions {
 		return true;
 	}
 
+	/**
+	 * Unused for JSON assertions. Here only for implementation consistency.
+	 * Framework should not call this if test cases are properly formed in the
+	 * yaml file. In case it is called, it will throw Exception.
+	 * 
+	 * @throws UnsupportedOperationException
+	 *             Calling this means something went wrong.
+	 */
 	@Override
 	public boolean assertFails(Object expected, Result actual)
 			throws UnsupportedOperationException {

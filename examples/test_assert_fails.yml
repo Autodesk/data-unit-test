@@ -1,0 +1,19 @@
+-
+  name: test assert syntax exception
+  setup: 
+    - use temp
+    - drop table if exists test_list
+    - create table test_list(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+  test: select id, name from table test_list
+  assert_type: assert_fails
+  assert_expectation: "org.apache.spark.sql.AnalysisException"
+  teardown:
+    - drop table test_list
+  ignore_failures: false
+  return_type: EXCEPTION
+- 
+  name: test assert permission exception
+  test: use test_db
+  assert_type: assert_fails
+  assert_expectation: "org.apache.hadoop.hive.ql.metadata.HiveException: MetaException(message:No privilege 'Select' found for inputs { database:test_db})"
+  return_type: EXCEPTION

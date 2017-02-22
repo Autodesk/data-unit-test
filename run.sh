@@ -5,15 +5,18 @@ set -o pipefail
 
 function usage
 {
-    echo "usage: $0 [--JAR_NAME | -J <framework jar name>] [--YML_FILE | -Y <test yml file>] [--DB_URL | -D <jdbc end point>] [--USER_NAME | -U <user name>] [--USER_PASSWORD | -P <password>] [--LOGGER | -L <log4j properties file>] [--ACTIVE_CONN_COUNT | -C <active connections count> ] [--CONN_IDLE_TIMEOUT | -T <connection abandon timeout>] [--help | -h]]"
+    echo "usage: $0 [--MAIN_JAR_LOCATION | -M <main jar location containing the application jar>] [--EXTRA_CLASSPATH | -E <location of extra jars containing the external driver class>] [--YML_FILE | -Y <test yml file>] [--DB_URL | -D <jdbc end point>] [--USER_NAME | -U <user name>] [--USER_PASSWORD | -P <password>] [--JDBC_DRIVER | -J <JDBC driver class name>] [--LOGGER | -L <log4j properties file>] [--ACTIVE_CONN_COUNT | -A <active connections count> ] [--CONN_IDLE_TIMEOUT | -T <connection abandon timeout>] [--help | -h]]"
 }
 
 ##### Main
 
 while [ "$1" != "" ]; do
     case $1 in
-	-J | --JAR_NAME )		shift
-					jar_name=$1
+	-M | --MAIN_JAR_LOCATION )	shift
+					main_jar=$1
+					;;
+	-E | --EXTRA_CLASSPATH )	shift
+					extra_classpath=$1
 					;;
         -Y | --YML_FILE )		shift
                                 	yml_file=$1
@@ -30,7 +33,10 @@ while [ "$1" != "" ]; do
 	-L | --LOGGER )			shift
 					logger=$1
 					;;
-	-C | --ACTIVE_CONN_COUNT )	shift
+	-J | --JDBC_DRIVER )		shift
+					jdbc_driver=$1
+					;;
+	-A | --ACTIVE_CONN_COUNT )	shift
 					conn_count=$1
 					;;
 	-T | --CONN_IDLE_TIMEOUT )	shift
@@ -45,12 +51,29 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$jar_name" ] || [ -z "$yml_file" ] || [ -z "$db_url" ] || [ -z "$user_name" ] || [ -z "$password" ] ; then
+if [ -z "$main_jar" ] || [ -z "$yml_file" ] || [ -z "$db_url" ] || [ -z "$user_name" ] || [ -z "$password" ] ; then
     usage
     exit 1
 fi
 
-cmd="java -jar $jar_name --YML_FILE $yml_file --DB_URL $db_url --USER_NAME $user_name --USER_PASSWORD $password "
+if [ ! -z "$jdbc_driver" ] && [ -z "$extra_classpath" ] ; then
+    echo "If external driver is provided, you need to provide the jar name containing the driver as well"
+    usage
+    exit 1
+fi
+
+cmd="java -cp $main_jar"
+
+if [ ! -z "$extra_classpath" ] ; then
+    cmd="$cmd:$extra_classpath"
+fi
+
+cmd="$cmd com.autodesk.adp.validation_framework.TestRunner --YML_FILE $yml_file --DB_URL $db_url --USER_NAME $user_name --USER_PASSWORD $password"
+
+if [ ! -z "$jdbc_driver" ] ; then
+    cmd="$cmd --JDBC_DRIVER $jdbc_driver"
+fi
+
 if [ ! -z "$logger" ]; then
     cmd="$cmd --LOGGER $logger"
 fi

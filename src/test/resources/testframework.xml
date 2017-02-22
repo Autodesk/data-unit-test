@@ -1,0 +1,13 @@
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+<suite name="First Suite" verbose="1" >
+  <test name="First Test" >
+    <classes>
+       <class name="com.autodesk.adp.validation_framework.tests.FactoryTest" />
+       <class name="com.autodesk.adp.validation_framework.tests.AssertionTest" />
+       <class name="com.autodesk.adp.validation_framework.utils.UtilsTest" />
+       <class name="com.autodesk.adp.validation_framework.assertions.CsvAssertionTest" />
+       <class name="com.autodesk.adp.validation_framework.assertions.JSONAssertionTest" />
+       <class name="com.autodesk.adp.validation_framework.assertions.ExceptionAssertionTest" />
+    </classes>
+  </test>
+</suite>

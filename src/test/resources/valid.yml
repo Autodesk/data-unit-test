@@ -1,0 +1,19 @@
+-
+  name: test assert equals list of lists
+  setup: 
+    - use temp
+    - drop table test_with_partitions
+    - create table test_with_partitions(id bigint) partitioned by (dt string, dh string)
+    - alter table test_with_partitions add partition(dt='20170202', dh='00')
+    - alter table test_with_partitions add partition(dt='20170202', dh='01')
+    - alter table test_with_partitions add partition(dt='20170202', dh='02')
+  test: show partitions test_with_partitions
+  assert_type: assert_equals
+  assert_expectation:
+    - [dt=20170202/dh=00]
+    - [dt=20170202/dh=01]
+    - [dt=20170202/dh=02]
+  teardown:
+    - drop table test_with_partitions
+  ignore_failures: false
+  return_type: LIST

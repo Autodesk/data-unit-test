@@ -1,0 +1,62 @@
+-
+  name: test assert excludes list of lists
+  setup: 
+    - use temp
+    - drop table test_with_partitions
+    - create table test_with_partitions(id bigint) partitioned by (dt string, dh string)
+    - alter table test_with_partitions add partition(dt='20170202', dh='00')
+    - alter table test_with_partitions add partition(dt='20170202', dh='01')
+    - alter table test_with_partitions add partition(dt='20170202', dh='02')
+  test: show partitions test_with_partitions
+  assert_type: assert_excludes
+  assert_expectation:
+    - [dt=20170202/dh=10]
+    - [dt=20170202/dh=11]
+    - [dt=20170202/dh=12]
+  teardown:
+    - drop table test_with_partitions
+  ignore_failures: false
+  return_type: LIST
+- 
+  name: test assert excludes list of maps
+  setup:
+    - use temp
+    - drop table test_map
+    - create table test_map(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+    - load data local inpath 'examples/test_data.txt' overwrite into table test_map
+  test: select id, name from test_map
+  assert_type: assert_excludes
+  assert_expectation:
+    - 
+      id: 6
+      name: name7
+    -
+      id: 8
+      name: name8
+    -
+      id: 9
+      name: name9
+    -
+      id: 10
+      name: name10
+    -
+      id: 11
+      name: name11
+  ignore_failures: false
+  teardown: 
+    - drop table test_map
+  return_type: MAP
+- 
+  name: test assert excludes file
+  setup:
+    - use temp
+    - drop table test_file
+    - create table test_file(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+    - load data local inpath 'examples/test_data.txt' overwrite into table test_file
+  test: select id, name from test_file
+  assert_type: assert_excludes
+  assert_expectation: examples/expected_excludes.csv
+  teardown: 
+    - drop table test_map
+  ignore_failures: false
+  return_type: CSV

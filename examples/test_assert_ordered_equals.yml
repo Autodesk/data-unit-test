@@ -1,0 +1,62 @@
+-
+  name: test assert ordered equals list of lists
+  setup: 
+    - use temp
+    - drop table if exists test_list
+    - create table test_list(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+    - load data local inpath 'examples/test_data.txt' overwrite into table test_list
+  test: select id, name from test_list order by id desc
+  assert_type: assert_ordered_equals
+  assert_expectation:
+    - [5,name5]
+    - [4,name4]
+    - [3,name3]
+    - [2,name2]
+    - [1,name1]    
+  teardown:
+    - drop table test_list
+  ignore_failures: false
+  return_type: LIST
+- 
+  name: test assert equals list of maps
+  setup:
+    - use temp
+    - drop table test_map
+    - create table test_map(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+    - load data local inpath 'examples/test_data.txt' overwrite into table test_map
+  test: select id, name from test_map order by id desc
+  assert_type: assert_ordered_equals
+  assert_expectation:
+    - 
+      id: 5
+      name: name5
+    -
+      id: 4
+      name: name4
+    -
+      id: 3
+      name: name3
+    -
+      id: 2
+      name: name2
+    -
+      id: 1
+      name: name1
+  ignore_failures: false
+  teardown: 
+    - drop table test_map
+  return_type: MAP
+- 
+  name: test assert equals file
+  setup:
+    - use temp
+    - drop table test_file
+    - create table test_file(id bigint, name string) row format delimited fields terminated by '\t' lines terminated by '\n' stored as TextFile
+    - load data local inpath 'examples/test_data.txt' overwrite into table test_file
+  test: select id, name from test_file order by id desc
+  assert_type: assert_ordered_equals
+  assert_expectation: examples/expected_ordered_equals.csv
+  teardown: 
+    - drop table test_file
+  ignore_failures: false
+  return_type: CSV

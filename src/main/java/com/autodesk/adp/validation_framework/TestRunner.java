@@ -1,7 +1,6 @@
 package com.autodesk.adp.validation_framework;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,14 +22,27 @@ import org.testng.xml.XmlSuite;
 import org.testng.xml.XmlTest;
 
 import com.autodesk.adp.validation_framework.db.DBHelper;
+import com.autodesk.adp.validation_framework.tests.TestAssertion;
 import com.autodesk.adp.validation_framework.utils.TEST_CONSTANTS;
 
+/**
+ * The Class TestRunner. Main class that is called while running the test
+ * framework. Is responsible for parsing the options and running the appropriate
+ * tests based on the yaml file.
+ */
 @SuppressWarnings("static-access")
 public class TestRunner {
 
+	/** The Constant cliOptions. Used for parsing command line options */
 	private static final Options cliOptions = new Options();
-	private static CommandLine cmd;
+
+	/** The yml location. The input yaml file containing all test cases */
 	private static String ymlLocation;
+
+	/**
+	 * The Constant TEST_FACTORY. @see
+	 * {@link com.autodesk.adp.validation_framework.tests.TestFactory}
+	 */
 	private static final String TEST_FACTORY = "com.autodesk.adp.validation_framework.tests.TestFactory";
 
 	static {
@@ -49,6 +61,8 @@ public class TestRunner {
 		Option activeConnectionOption = OptionBuilder.hasArg(true)
 				.isRequired(false)
 				.create(TEST_CONSTANTS.ACTIVE_CONN_COUNT.name());
+		Option jdbcDriverOption = OptionBuilder.hasArg(true).isRequired(false)
+				.create(TEST_CONSTANTS.JDBC_DRIVER.name());
 
 		cliOptions.addOption(inputYml);
 		cliOptions.addOption(loggerOption);
@@ -57,10 +71,18 @@ public class TestRunner {
 		cliOptions.addOption(userPasswordOption);
 		cliOptions.addOption(idleTimeOutOption);
 		cliOptions.addOption(activeConnectionOption);
+		cliOptions.addOption(jdbcDriverOption);
 	}
 
+	/**
+	 * Parses the args passed by the command line
+	 *
+	 * @param args
+	 *            the command line arguments
+	 */
 	private static void parseArgs(String[] args) {
 		CommandLineParser parser = new BasicParser();
+		CommandLine cmd = null;
 		try {
 			cmd = parser.parse(cliOptions, args, true);
 		} catch (ParseException e) {
@@ -88,14 +110,26 @@ public class TestRunner {
 				cmd.getOptionValue(TEST_CONSTANTS.USER_NAME.name()));
 		System.setProperty(TEST_CONSTANTS.USER_PASSWORD.name(),
 				cmd.getOptionValue(TEST_CONSTANTS.USER_PASSWORD.name()));
+
+		if (cmd.hasOption(TEST_CONSTANTS.JDBC_DRIVER.name()))
+			System.setProperty(TEST_CONSTANTS.JDBC_DRIVER.name(),
+					cmd.getOptionValue(TEST_CONSTANTS.JDBC_DRIVER.name()));
+
 		if (cmd.hasOption(TEST_CONSTANTS.CONN_IDLE_TIMEOUT.name()))
 			System.setProperty(TEST_CONSTANTS.CONN_IDLE_TIMEOUT.name(),
 					cmd.getOptionValue(TEST_CONSTANTS.CONN_IDLE_TIMEOUT.name()));
 		if (cmd.hasOption(TEST_CONSTANTS.ACTIVE_CONN_COUNT.name()))
 			System.setProperty(TEST_CONSTANTS.ACTIVE_CONN_COUNT.name(),
 					cmd.getOptionValue(TEST_CONSTANTS.ACTIVE_CONN_COUNT.name()));
+
 	}
 
+	/**
+	 * Creates and run tests. Uses the supplied arguments to create an xml
+	 * suite. The xml suite uses @link TestFactory to create the test factory.
+	 * This test factory takes the yaml file provided for the test cases. Each
+	 * test case is executed using appropriate @see {@link TestAssertion}
+	 */
 	private static void createAndRunTests() {
 		List<XmlSuite> suites = new ArrayList<XmlSuite>();
 		XmlSuite suite = new XmlSuite();
@@ -112,12 +146,24 @@ public class TestRunner {
 		tng.run();
 	}
 
-	public static void main(String[] args) throws FileNotFoundException,
-			IOException, SQLException {
-
-		parseArgs(args);
-		createAndRunTests();
-		DBHelper.getInstance().closeAll();
+	/**
+	 * The main method. Parses the command line arguments, creates appropriate
+	 * test cases using the arguments and executes them. Once all test cases
+	 * have finished executing, closes the associated database connection pool.
+	 *
+	 * @param args
+	 *            the command line arguments
+	 * @throws SQLException
+	 *             the SQL exception in case DBHelper is unable to close the
+	 *             connections.
+	 */
+	public static void main(String[] args) throws SQLException {
+		try {
+			parseArgs(args);
+			createAndRunTests();
+		} finally {
+			DBHelper.getInstance().closeAll();
+		}
 	}
 
 }
