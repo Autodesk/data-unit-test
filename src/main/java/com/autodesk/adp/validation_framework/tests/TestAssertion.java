@@ -3,7 +3,6 @@ package com.autodesk.adp.validation_framework.tests;
 import java.sql.Connection;
 import java.util.ArrayList;
 
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
@@ -13,7 +12,7 @@ import org.testng.annotations.Test;
 import com.autodesk.adp.validation_framework.assertions.Assertions;
 import com.autodesk.adp.validation_framework.assertions.CsvAssertions;
 import com.autodesk.adp.validation_framework.assertions.ExceptionAssertions;
-import com.autodesk.adp.validation_framework.assertions.JSONAssertions;
+import com.autodesk.adp.validation_framework.assertions.ListAssertions;
 import com.autodesk.adp.validation_framework.db.DBHelper;
 import com.autodesk.adp.validation_framework.utils.ASSERTTYPE;
 import com.autodesk.adp.validation_framework.utils.RETURNTYPE;
@@ -131,10 +130,9 @@ public class TestAssertion implements ITest {
 	public void setup() throws Exception {
 		LOG.info("setup queries provided: " + setupQueries);
 		try {
-			JSONArray queryArr = new JSONArray(setupQueries);
-			for (int i = 0; i < queryArr.length(); i++) {
-				LOG.info("Executing query: " + queryArr.getString(i));
-				dbHelper.executeAndGetResults(queryArr.getString(i),
+			for (String setupQry : setupQueries) {
+				LOG.info("Executing query: " + setupQry);
+				dbHelper.executeAndGetResults(setupQry,
 						RETURNTYPE.NONE, con);
 			}
 		} catch (Exception ex) {
@@ -156,7 +154,7 @@ public class TestAssertion implements ITest {
 			return new CsvAssertions();
 		case LIST:
 		case MAP:
-			return new JSONAssertions();
+			return new ListAssertions();
 		case EXCEPTION:
 			return new ExceptionAssertions();
 		default:
@@ -243,10 +241,9 @@ public class TestAssertion implements ITest {
 	public void teardown() throws Exception {
 		LOG.info("teardown queries provided: " + tearDownQueries);
 		try {
-			JSONArray queryArr = new JSONArray(tearDownQueries);
-			for (int i = 0; i < queryArr.length(); i++) {
-				LOG.info("Executing query: " + queryArr.getString(i));
-				dbHelper.executeAndGetResults(queryArr.getString(i),
+			for (String teardownQry : tearDownQueries) {
+				LOG.info("Executing query: " + teardownQry);
+				dbHelper.executeAndGetResults(teardownQry,
 						RETURNTYPE.NONE, con);
 			}
 		} catch (Exception ex) {

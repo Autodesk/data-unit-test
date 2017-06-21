@@ -1,6 +1,6 @@
 import de.johoop.testngplugin.TestNGPlugin._
 
-name := "validation-framework"
+name := "data-unit-test"
 
 organization := "com.autodesk"
 
@@ -35,13 +35,14 @@ libraryDependencies ++= Seq(
   "log4j" % "log4j" % "1.2.17" ,
   "org.apache.hive" % "hive-jdbc" % "1.2.0",
   "org.testng" % "testng" % "6.11",
-  "org.json" % "json" % "20160810",
   "org.apache.commons" % "commons-csv" % "1.4",
   "org.yaml" % "snakeyaml" % "1.17",
   "org.apache.hadoop" % "hadoop-common" % "2.6.0",
   "org.powermock" % "powermock-api-mockito" % "1.7.0RC4",
   "org.powermock" % "powermock-module-testng" % "1.7.0RC4"
 ) 
+
+excludeDependencies += "org.json" % "json"
 
 artifact in (Compile, assembly) := {
  val art = (artifact in (Compile, assembly)).value

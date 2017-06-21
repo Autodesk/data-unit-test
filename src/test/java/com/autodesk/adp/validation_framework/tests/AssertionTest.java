@@ -16,7 +16,7 @@ import org.testng.annotations.Test;
 
 import com.autodesk.adp.validation_framework.assertions.CsvAssertions;
 import com.autodesk.adp.validation_framework.assertions.ExceptionAssertions;
-import com.autodesk.adp.validation_framework.assertions.JSONAssertions;
+import com.autodesk.adp.validation_framework.assertions.ListAssertions;
 import com.autodesk.adp.validation_framework.db.DBHelper;
 import com.autodesk.adp.validation_framework.utils.ASSERTTYPE;
 import com.autodesk.adp.validation_framework.utils.RETURNTYPE;
@@ -142,14 +142,14 @@ public class AssertionTest extends PowerMockTestCase {
 	public void testReturnList() {
 		TestAssertion assertion = new TestAssertion(false, false, true, null,
 				null, null, RETURNTYPE.LIST, null, null, "name");
-		Assert.assertTrue(assertion.getAssertionType() instanceof JSONAssertions);
+		Assert.assertTrue(assertion.getAssertionType() instanceof ListAssertions);
 	}
 
 	@Test
 	public void testReturnMap() {
 		TestAssertion assertion = new TestAssertion(false, false, true, null,
 				null, null, RETURNTYPE.MAP, null, null, "name");
-		Assert.assertTrue(assertion.getAssertionType() instanceof JSONAssertions);
+		Assert.assertTrue(assertion.getAssertionType() instanceof ListAssertions);
 	}
 
 	@Test

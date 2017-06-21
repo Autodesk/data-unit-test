@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
@@ -14,12 +12,12 @@ import com.autodesk.adp.validation_framework.utils.AssertionUtils.RandomResultSe
 import com.autodesk.adp.validation_framework.utils.RETURNTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
 
-public class JSONAssertionTest {
+public class ListAssertionTest {
 
-	private static final JSONAssertions ASSERTION = new JSONAssertions();
+	private static final ListAssertions ASSERTION = new ListAssertions();
 
 	private List<Object> getRandomResults(RandomResultSet results,
-			RETURNTYPE returnType) throws JSONException {
+			RETURNTYPE returnType) {
 		List<Object> list = new ArrayList<Object>();
 		for (String[] row : results.getRows()) {
 			switch (returnType) {
@@ -51,10 +49,10 @@ public class JSONAssertionTest {
 		RandomResultSet results = AssertionUtils.createRandomResultSet();
 		List<Object> expected = getRandomResults(results, RETURNTYPE.MAP);
 		Assert.assertTrue(ASSERTION.assertEquals(expected, new Result(
-				RETURNTYPE.MAP, new JSONArray(expected), null, null)));
+				RETURNTYPE.MAP, expected, null, null)));
 		expected = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertTrue(ASSERTION.assertEquals(expected, new Result(
-				RETURNTYPE.LIST, new JSONArray(expected), null, null)));
+				RETURNTYPE.LIST, expected, null, null)));
 	}
 
 	@Test
@@ -66,9 +64,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertEquals(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertEquals(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -80,9 +78,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertTrue(ASSERTION.assertEquals(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertTrue(ASSERTION.assertEquals(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -94,9 +92,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertEquals(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertEquals(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -108,9 +106,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertTrue(ASSERTION.assertIncludes(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertTrue(ASSERTION.assertIncludes(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -123,9 +121,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertIncludes(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertIncludes(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -137,9 +135,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertTrue(ASSERTION.assertExcludes(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertTrue(ASSERTION.assertExcludes(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -151,9 +149,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertExcludes(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertExcludes(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -161,10 +159,10 @@ public class JSONAssertionTest {
 		RandomResultSet results = AssertionUtils.createRandomResultSet();
 		List<Object> expected = getRandomResults(results, RETURNTYPE.MAP);
 		Assert.assertTrue(ASSERTION.assertOrderedEquals(expected, new Result(
-				RETURNTYPE.MAP, new JSONArray(expected), null, null)));
+				RETURNTYPE.MAP, expected, null, null)));
 		expected = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertTrue(ASSERTION.assertOrderedEquals(expected, new Result(
-				RETURNTYPE.LIST, new JSONArray(expected), null, null)));
+				RETURNTYPE.LIST, expected, null, null)));
 	}
 
 	@Test
@@ -176,9 +174,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertOrderedEquals(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertOrderedEquals(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 	@Test
@@ -190,9 +188,9 @@ public class JSONAssertionTest {
 		List<Object> actualListOfMaps = getRandomResults(results, RETURNTYPE.MAP);
 		List<Object> actualListOfLists = getRandomResults(results, RETURNTYPE.LIST);
 		Assert.assertFalse(ASSERTION.assertOrderedEquals(expectedListOfMaps, new Result(
-				RETURNTYPE.MAP, new JSONArray(actualListOfMaps), null, null)));
+				RETURNTYPE.MAP, actualListOfMaps, null, null)));
 		Assert.assertFalse(ASSERTION.assertOrderedEquals(expectedListOfLists, new Result(
-				RETURNTYPE.LIST, new JSONArray(actualListOfLists), null, null)));
+				RETURNTYPE.LIST, actualListOfLists, null, null)));
 	}
 
 }

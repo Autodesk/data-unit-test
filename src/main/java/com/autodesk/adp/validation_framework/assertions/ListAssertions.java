@@ -2,7 +2,6 @@ package com.autodesk.adp.validation_framework.assertions;
 
 import java.util.List;
 
-import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -10,17 +9,17 @@ import com.autodesk.adp.validation_framework.utils.ASSERTTYPE;
 import com.autodesk.adp.validation_framework.utils.Result;
 
 /**
- * The Class JSONAssertions. Checks for various supported assertions (specified
+ * The Class ListAssertions. Checks for various supported assertions (specified
  * in {@link ASSERTTYPE}) The expected object must be in form of a list of
  * objects. This can be achieved by specifying the expected output in form of
- * {@link JSONArray} The execution of tests generates the output in form of list
+ * List. The execution of tests generates the output in form of list
  * of objects which is then matched against the expected list.
  */
-public class JSONAssertions implements Assertions {
+public class ListAssertions implements Assertions {
 
 	/** The Constant LOG. Used for logging */
 	private static final Logger LOG = LoggerFactory
-			.getLogger(JSONAssertions.class);
+			.getLogger(ListAssertions.class);
 
 	/**
 	 * Assert equals checks for equality between expected and actual outputs.
@@ -30,15 +29,14 @@ public class JSONAssertions implements Assertions {
 	 * is compared and if the contents match, the assertion succeeds.
 	 * 
 	 * @param expectedList
-	 *            The expected output in form of JSONArray.
+	 *            The expected output in form of List.
 	 * @param result
 	 *            The result obtained after executing the test case.
 	 */
 	public boolean assertEquals(Object expectedList, Result result) {
-		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
 		List<Object> expectedArray = (List<Object>) expectedList;
-		List<Object> actualArray = new JSONArray(actualList).toList();
+		List<Object> actualArray = result.getList();
 		if (actualArray.size() != expectedArray.size()) {
 			LOG.error("Number of records in actual list does not match the number of records in expected list");
 			return false;
@@ -63,15 +61,14 @@ public class JSONAssertions implements Assertions {
 	 * output are present in the actual output, the assertion succeeds.
 	 * 
 	 * @param expectedList
-	 *            The expected output in form of JSONArray.
+	 *            The expected output in form of List.
 	 * @param result
 	 *            The result obtained after executing the test case.
 	 */
 	public boolean assertIncludes(Object expectedList, Result result) {
-		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
 		List<Object> expectedArray = (List<Object>) expectedList;
-		List<Object> actualArray = new JSONArray(actualList).toList();
+		List<Object> actualArray = result.getList();
 		if (!actualArray.containsAll(expectedArray)) {
 			LOG.error("Actual list does not include expected list");
 			return false;
@@ -87,15 +84,14 @@ public class JSONAssertions implements Assertions {
 	 * output are absent from the actual output, the assertion succeeds.
 	 * 
 	 * @param expectedList
-	 *            The expected output in form of JSONArray.
+	 *            The expected output in form of List.
 	 * @param result
 	 *            The result obtained after executing the test case.
 	 */
 	public boolean assertExcludes(Object expectedList, Result result) {
-		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
 		List<Object> expectedArray = (List<Object>) expectedList;
-		List<Object> actualArray = new JSONArray(actualList).toList();
+		List<Object> actualArray = result.getList();
 		for (int i = 0; i < expectedArray.size(); i++) {
 			if (actualArray.contains(expectedArray.get(i))) {
 				LOG.error("Actual list does not exclude expected list");
@@ -115,15 +111,14 @@ public class JSONAssertions implements Assertions {
 	 * the actual output for the assertion to succeed.
 	 * 
 	 * @param expectedList
-	 *            The expected output in form of JSONArray.
+	 *            The expected output in form of List.
 	 * @param result
 	 *            The result obtained after executing the test case.
 	 */
 	public boolean assertOrderedEquals(Object expectedList, Result result) {
-		String actualList = result.getList().toString();
 		@SuppressWarnings("unchecked")
 		List<Object> expectedArray = (List<Object>) expectedList;
-		List<Object> actualArray = new JSONArray(actualList).toList();
+		List<Object> actualArray = result.getList();
 		if (actualArray.size() != expectedArray.size()) {
 			LOG.error("Number of records in actual list does not match the number of records in expected list");
 			return false;
@@ -139,7 +134,7 @@ public class JSONAssertions implements Assertions {
 	}
 
 	/**
-	 * Unused for JSON assertions. Here only for implementation consistency.
+	 * Unused for List assertions. Here only for implementation consistency.
 	 * Framework should not call this if test cases are properly formed in the
 	 * yaml file. In case it is called, it will throw Exception.
 	 * 

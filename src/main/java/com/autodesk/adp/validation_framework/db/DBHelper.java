@@ -9,13 +9,15 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.apache.commons.dbcp.BasicDataSource;
-import org.json.JSONArray;
-import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -201,7 +203,7 @@ public class DBHelper {
 			RETURNTYPE returnType) throws SQLException, IOException {
 		switch (returnType) {
 		case LIST:
-			JSONArray list = getListOfLists(rs, metadata);
+			List<Object> list = getListOfLists(rs, metadata);
 			return new Result(returnType, list, null, null);
 		case MAP:
 			list = getListOfObjects(rs, metadata);
@@ -224,30 +226,30 @@ public class DBHelper {
 	/**
 	 * Gets the list of objects from the resultset. Called when the return type
 	 * is {@link RETURNTYPE#MAP}. Parses the resultset as well as the metadata
-	 * and cretes a JSONArray of JSONObjects with keys as the column names and
+	 * and creates a {@link List} of {@link Map} with keys as the column names and
 	 * values as the column values.
 	 *
 	 * @param rs
 	 *            the resultset obtained after executing the query
 	 * @param metadata
 	 *            the metadata associated with the resultset
-	 * @return the JSONArray of JSONObjects obtained by parsing the resultset.
+	 * @return the List of Map obtained by parsing the resultset.
 	 * @throws SQLException
 	 *             Signals that SQL exception has occurred while parsing the
 	 *             resultset and the corresponding metadata.
 	 */
-	private JSONArray getListOfObjects(ResultSet rs, ResultSetMetaData metadata)
+	private List<Object> getListOfObjects(ResultSet rs, ResultSetMetaData metadata)
 			throws SQLException {
-		JSONArray output = new JSONArray();
+		List<Object> output = new ArrayList<Object>();
 		int numCols = metadata.getColumnCount();
 		while (rs.next()) {
-			JSONObject row = new JSONObject();
+			Map<String, Object> row = new HashMap<String, Object>();
 			for (int i = 1; i <= numCols; i++) {
 				int type = metadata.getColumnType(i);
 				switch (type) {
 				case Types.ARRAY:
 					row.put(metadata.getColumnName(i),
-							new JSONArray(rs.getString(i)));
+							rs.getArray(i));
 					break;
 				case Types.BIGINT:
 					row.put(metadata.getColumnName(i), rs.getLong(i));
@@ -281,7 +283,7 @@ public class DBHelper {
 					break;
 				case Types.JAVA_OBJECT:
 					row.put(metadata.getColumnName(i),
-							new JSONObject(rs.getString(i)));
+							rs.getObject(i));
 					break;
 				case Types.SMALLINT:
 					row.put(metadata.getColumnName(i), rs.getShort(i));
@@ -296,7 +298,7 @@ public class DBHelper {
 					break;
 				}
 			}
-			output.put(row);
+			output.add(row);
 		}
 		return output;
 	}
@@ -304,76 +306,76 @@ public class DBHelper {
 	/**
 	 * Gets the list of lists from the resultset. Called when the return type is
 	 * {@link RETURNTYPE#LIST}. Parses the resultset as well as the metadata and
-	 * cretes a JSONArray of JSONArrays containing the column values.
+	 * creates a {@link List} of {@link List} containing the column values.
 	 *
 	 * @param rs
 	 *            the resultset obtained after executing the query
 	 * @param metadata
 	 *            the metadata associated with the resultset
-	 * @return the JSONArray of JSONArray obtained by parsing the resultset.
+	 * @return the List of List obtained by parsing the resultset.
 	 * @throws SQLException
 	 *             Signals that SQL exception has occurred while parsing the
 	 *             resultset and the corresponding metadata.
 	 */
-	private JSONArray getListOfLists(ResultSet rs, ResultSetMetaData metadata)
+	private List<Object> getListOfLists(ResultSet rs, ResultSetMetaData metadata)
 			throws SQLException {
-		JSONArray output = new JSONArray();
+		List<Object> output = new ArrayList<Object>();
 		int numCols = metadata.getColumnCount();
 		while (rs.next()) {
-			JSONArray row = new JSONArray();
+			List<Object> row = new ArrayList<Object>();
 			for (int i = 1; i <= numCols; i++) {
 				int type = metadata.getColumnType(i);
 				switch (type) {
 				case Types.ARRAY:
-					row.put(new JSONArray(rs.getString(i)));
+					row.add(rs.getArray(i));
 					break;
 				case Types.BIGINT:
-					row.put(rs.getLong(i));
+					row.add(rs.getLong(i));
 					break;
 				case Types.BINARY:
-					row.put(rs.getBytes(i));
+					row.add(rs.getBytes(i));
 					break;
 				case Types.BOOLEAN:
-					row.put(rs.getBoolean(i));
+					row.add(rs.getBoolean(i));
 					break;
 				case Types.DATE:
-					row.put(rs.getDate(i));
+					row.add(rs.getDate(i));
 					break;
 				case Types.DECIMAL:
-					row.put(rs.getDouble(i));
+					row.add(rs.getDouble(i));
 					break;
 				case Types.DOUBLE:
-					row.put(rs.getDouble(i));
+					row.add(rs.getDouble(i));
 					break;
 				case Types.FLOAT:
-					row.put(rs.getFloat(i));
+					row.add(rs.getFloat(i));
 					break;
 				case Types.INTEGER:
-					row.put(rs.getInt(i));
+					row.add(rs.getInt(i));
 					break;
 				case Types.CHAR:
 				case Types.VARCHAR:
 				case Types.STRUCT:
 				case Types.OTHER:
-					row.put(rs.getString(i));
+					row.add(rs.getString(i));
 					break;
 				case Types.JAVA_OBJECT:
-					row.put(new JSONObject(rs.getString(i)));
+					row.add(rs.getObject(i));
 					break;
 				case Types.SMALLINT:
-					row.put(rs.getShort(i));
+					row.add(rs.getShort(i));
 					break;
 				case Types.TIMESTAMP:
-					row.put(rs.getTimestamp(i));
+					row.add(rs.getTimestamp(i));
 					break;
 				case Types.TINYINT:
-					row.put(rs.getByte(i));
+					row.add(rs.getByte(i));
 					break;
 				default:
 					break;
 				}
 			}
-			output.put(row);
+			output.add(row);
 		}
 		return output;
 	}

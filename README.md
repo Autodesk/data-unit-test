@@ -1,5 +1,5 @@
-# DataUnitTest
-DataUnitTest is a framework that allows user to test their data present in any database. This database can be hive, Redshift, Athena or even MySQL. The users provide a YAML file that will contain all the tests specifications. The framework parses the YAML input file and creates the executable tests. These tests are executed against the database provided by the user and the results are validated against the expected results provided by the user. The framework uses TestNG and each test is run as a JUNIT test that is run via the TestNG framework. The test report is also generated for the users to view the output of their test cases.
+# data-unit-test
+data-unit-test is a framework that allows user to test their data present in any database. This database can be hive, Redshift, Athena or even MySQL. The users provide a YAML file that will contain all the tests specifications. The framework parses the YAML input file and creates the executable tests. These tests are executed against the database provided by the user and the results are validated against the expected results provided by the user. The framework uses TestNG and each test is run as a JUNIT test that is run via the TestNG framework. The test report is also generated for the users to view the output of their test cases.
 
 ## Build and Run
 The project requires sbt to be installed on the local system. Once sbt is installed, user can build it locally to generate the uber jar file. This jar can then be used to run using the run.sh script provided with the project. Once the project is forked, user can use following command to clone and build.
@@ -339,6 +339,17 @@ Sample test yaml files can be found in the git repo. <a href="https://git.autod
 
 ## Test results
 The test results are generated in directory test-output. The tests.html file under directory validation-tests gives an html format output while the testng-results.xml gives the xml output.
+
+## Contributing
+The data-unit-test project is meant to evolve with feedback - the project and its users greatly appreciate any thoughts on ways to improve the design or features. Read below to see how you can take part and contribute:
+
+### Contributing Guide
+
+Read our [guide](CONTRIBUTING.md) to learn about the development process and how to work with the core team.
+
+### License
+
+data-unit-test is [Apache-2.0 licensed](./LICENSE)
 
 ## Future Enhancements
 The current scope of the test framework is rather limited. Future enhancements can include following

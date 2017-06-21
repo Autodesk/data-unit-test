@@ -1,6 +1,6 @@
 package com.autodesk.adp.validation_framework.utils;
 
-import org.json.JSONArray;
+import java.util.List;
 
 /**
  * The Class Result. This is a wrapper over the query execution results.
@@ -13,7 +13,7 @@ public class Result {
 	private RETURNTYPE returnType;
 
 	/** The list of lists or map created using the results of query execution. */
-	private JSONArray list;
+	private List<Object> list;
 
 	/**
 	 * The file name of the csv file generated using the results of query
@@ -38,7 +38,7 @@ public class Result {
 	 * @param exception
 	 *            the exception thrown as a result of query execution.
 	 */
-	public Result(RETURNTYPE returnType, JSONArray list, String fileName,
+	public Result(RETURNTYPE returnType, List<Object> list, String fileName,
 			Exception exception) {
 		this.returnType = returnType;
 		this.list = list;
@@ -60,7 +60,7 @@ public class Result {
 	 *
 	 * @return the list
 	 */
-	public JSONArray getList() {
+	public List<Object> getList() {
 		return list;
 	}
 
