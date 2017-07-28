@@ -288,19 +288,19 @@ The framework packages all the necessary classes and their dependencies into an 
       <td>DB_URL</td>
       <td>the jdbc endpoint to which the framework should connect to in order to execute the tests. Note that this must be enclosed in double quotes since it may contain lots of special characters that may trigger java's parsing</td>
       <td>true</td>
-      <td>"jdbc:<a>hive2://fastaccess-dev.api.autodesk.com:10008/;ssl=true</a>;"</td>
+      <td>"jdbc:<a>hive2://<host>:<port>/</a>;"</td>
     </tr>
     <tr>
       <td>USER_NAME</td>
       <td>the user name to be used while connecting to the jdbc end point</td>
       <td>true</td>
-      <td>Autodesk user name</td>
+      <td></td>
     </tr>
     <tr>
       <td>USER_PASSWORD</td>
       <td>the password to be used while connecting to the database</td>
       <td>true</td>
-      <td>Autodesk password</td>
+      <td></td>
     </tr>
     <tr>
       <td colspan="1">LOGGER</td>
